@@ -60,5 +60,27 @@ This repository currently focuses on **mobile app UI and core structure**.
 
 ---
 
-## 📂 Project Structure (Simplified)
+## 📂 Project Structure (
+lib/
+├── main.dart                    # App entry point with Firebase init
+├── firebase_options.dart        # Platform-specific Firebase configs
+├── models/                      # Data models
+│   ├── pet_model.dart           # Pet data structure
+│   └── position_model.dart      # GPS position data
+├── services/                    # Business logic & APIs
+│   ├── auth_service.dart        # Firebase authentication
+│   ├── database_service.dart    # Firestore operations
+│   ├── traccar_service.dart     # GPS tracking API client
+│   └── api_service.dart         # General API utilities
+└── features/                    # Feature-based UI modules
+    ├── auth/                    # Authentication screens
+    ├── home/                    # Main app shell & dashboard
+    ├── location/                # Map & location tracking
+    ├── notification/            # Notification management
+    ├── onboarding/              # Welcome & device pairing
+    ├── paw/                     # Pet-related features
+    ├── person/                  # User profile
+    ├── pets/                    # Pet details & management
+    ├── shared/                  # Shared utilities
+    └── tracking/                # GPS tracking screens
 

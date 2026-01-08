@@ -60,6 +60,20 @@ This repository currently focuses on **mobile app UI and core structure**.
 
 ---
 
+
+---
+
+## ▶️ Getting Started
+
+1. Make sure Flutter is installed
+2. Clone this repository
+3. Run:
+   ```bash
+   flutter pub get
+   flutter run
+   or Run in window as " Flutter dun -d chrome/Miscrosoft Edge/...etc" 
+
+
 ## 📂 Project Structure
 Core Files
 pubspec.yaml: Flutter dependencies (Firebase, maps, image picker)

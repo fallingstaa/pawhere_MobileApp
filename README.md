@@ -82,5 +82,5 @@ lib/
     ├── person/                  # User profile
     ├── pets/                    # Pet details & management
     ├── shared/                  # Shared utilities
-    └── tracking/                # GPS tracking screens
+    └── tracking/                # GPS tracking screens.
 

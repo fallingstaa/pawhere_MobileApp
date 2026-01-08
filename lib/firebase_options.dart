@@ -46,7 +46,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '712075237721',
     projectId: 'pawhereapp',
     authDomain: 'pawhereapp.firebaseapp.com',
-    storageBucket: 'pawhereapp.appspot.com',
+    storageBucket: 'pawhereapp.firebasestorage.app',
     measurementId: 'G-K03019GDDT',
   );
 
@@ -55,7 +55,7 @@ class DefaultFirebaseOptions {
     appId: '1:712075237721:android:00a18f7ca192c3b5ae5448',
     messagingSenderId: '712075237721',
     projectId: 'pawhereapp',
-    storageBucket: 'pawhereapp.appspot.com',
+    storageBucket: 'pawhereapp.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
@@ -63,7 +63,7 @@ class DefaultFirebaseOptions {
     appId: '1:712075237721:ios:b7a48e8bff0302bdae5448',
     messagingSenderId: '712075237721',
     projectId: 'pawhereapp',
-    storageBucket: 'pawhereapp.appspot.com',
+    storageBucket: 'pawhereapp.firebasestorage.app',
     iosBundleId: 'com.example.pawhere',
   );
 
@@ -72,7 +72,7 @@ class DefaultFirebaseOptions {
     appId: '1:712075237721:ios:b7a48e8bff0302bdae5448',
     messagingSenderId: '712075237721',
     projectId: 'pawhereapp',
-    storageBucket: 'pawhereapp.appspot.com',
+    storageBucket: 'pawhereapp.firebasestorage.app',
     iosBundleId: 'com.example.pawhere',
   );
 
@@ -82,7 +82,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '712075237721',
     projectId: 'pawhereapp',
     authDomain: 'pawhereapp.firebaseapp.com',
-    storageBucket: 'pawhereapp.appspot.com',
+    storageBucket: 'pawhereapp.firebasestorage.app',
     measurementId: 'G-KNT1LCHE3T',
   );
+
 }

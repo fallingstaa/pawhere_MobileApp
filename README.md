@@ -7,7 +7,6 @@ The system uses:
 - **Traccar** for GPS tracking & location data
 - **Firebase** for authentication, app data, and notifications
 
----
 
 ## 📌 Project Status
 
@@ -19,7 +18,6 @@ The system uses:
 
 This repository currently focuses on **mobile app UI and core structure**.
 
----
 
 ## 🛠 Tech Stack
 
@@ -30,7 +28,7 @@ This repository currently focuses on **mobile app UI and core structure**.
   - Cloud Functions (Proxy)
 - Traccar (GPS Tracking Backend)
 
----
+
 
 ## ✅ Features Implemented
 
@@ -50,7 +48,6 @@ This repository currently focuses on **mobile app UI and core structure**.
 - Map screen displaying pet location
 - Pet profile image selection
 
----
 
 ## ⏳ Not Finished Yet
 

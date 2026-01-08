@@ -71,7 +71,7 @@ This repository currently focuses on **mobile app UI and core structure**.
    ```bash
    flutter pub get
    flutter run
-   or Run in window as " Flutter dun -d chrome/Miscrosoft Edge/...etc" 
+   or Run in chrome/Miscrosoft Edge/...etc as " Flutter dun -d chrome"
 
 
 ## 📂 Project Structure

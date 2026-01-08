@@ -1,119 +1,183 @@
-    import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:pawhere/services/database_service.dart';
+import 'package:pawhere/services/traccar_service.dart';
 
-    class AddEquipmentScreen extends StatelessWidget {
-    const AddEquipmentScreen({Key? key}) : super(key: key);
+class AddEquipmentScreen extends StatefulWidget {
+  const AddEquipmentScreen({Key? key}) : super(key: key);
+  static const routeName = '/add-equipment';
 
-    // Define a static route name for easy navigation
-    static const routeName = '/add-equipment';
+  @override
+  State<AddEquipmentScreen> createState() => _AddEquipmentScreenState();
+}
 
-    @override
-    Widget build(BuildContext context) {
-        return Scaffold(
-        appBar: AppBar(
-            // The back arrow is automatically handled by the AppBar
-            backgroundColor: const Color(0xFFF4A905),
-            title: const Text(
-            'Add Equipment',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-            ),
-            iconTheme: const IconThemeData(color: Colors.white), // Makes the back arrow white
-            centerTitle: true,
-        ),
-        body: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-                const Text(
-                'Add Pet\'s Info',
-                style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                ),
-                ),
-                const SizedBox(height: 20),
+class _AddEquipmentScreenState extends State<AddEquipmentScreen> {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _imeiController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
-                // Account Name Field
-                _buildInputField(
-                hintText: 'Account Name',
-                // The design uses a grey background for the fields
-                backgroundColor: const Color(0xFFE0E0E0), 
-                ),
-                const SizedBox(height: 16),
+  final TraccarService _traccarService = TraccarService();
+  final DatabaseService _dbService = DatabaseService();
 
-                // IMEI Number Field
-                _buildInputField(
-                hintText: 'IMEI number',
-                backgroundColor: const Color(0xFFE0E0E0),
-                ),
-                const Padding(
-                padding: EdgeInsets.only(top: 4.0, bottom: 16.0),
-                child: Text(
-                    'Please enter the new device IMEI number',
-                    style: TextStyle(fontSize: 12, color: Colors.black54),
-                ),
-                ),
+  bool _isSaving = false;
 
-                // Device Password Field
-                _buildInputField(
-                hintText: 'Device password',
-                isPassword: true,
-                backgroundColor: const Color(0xFFE0E0E0),
-                ),
-                const Padding(
-                padding: EdgeInsets.only(top: 4.0, bottom: 40.0),
-                child: Text(
-                    'Please enter the new device password',
-                    style: TextStyle(fontSize: 12, color: Colors.black54),
-                ),
-                ),
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _imeiController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
-                // Add Equipment Button
-                SizedBox(
-                height: 50,
-                child: ElevatedButton(
-                    onPressed: () {
-                    // TODO: Implement logic to save pet/equipment data
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Equipment Add Logic To Be Implemented!')),
-                    );
-                    },
-                    style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF134694),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                    ),
-                    ),
-                    child: const Text(
-                    'Add Equipment',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
-                ),
-                ),
-            ],
-            ),
-        ),
-        );
+  void _showSnackBar(String message, {Color color = Colors.black87}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: color),
+    );
+  }
+
+  // Accept 15–20 numeric digits only (IMEI/Account ID).
+  bool _validImei(String v) => RegExp(r'^[0-9]{15,20}$').hasMatch(v);
+
+  Future<void> _addEquipment() async {
+    final name = _nameController.text.trim();
+    // Keep digits only (removes spaces, dashes, etc.)
+    final sanitizedImei = _imeiController.text.replaceAll(RegExp(r'\D'), '');
+    if (sanitizedImei != _imeiController.text) {
+      _imeiController.text = sanitizedImei; // reflect cleaned value in UI
+    }
+    final imei = sanitizedImei;
+    final password = _passwordController.text.trim();
+
+    if (name.isEmpty || imei.isEmpty || password.isEmpty) {
+      _showSnackBar('Please fill all fields.', color: Colors.red);
+      return;
+    }
+    if (!_validImei(imei)) {
+      _showSnackBar(
+        'Device ID must be 15–20 digits (numbers only). You entered ${imei.length}.',
+        color: Colors.red,
+      );
+      return;
     }
 
-    Widget _buildInputField({
-        required String hintText,
-        Color backgroundColor = Colors.white,
-        bool isPassword = false,
-    }) {
-        return Container(
-        decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: BorderRadius.circular(12),
+    setState(() => _isSaving = true);
+    _showSnackBar('Verifying backend connectivity...', color: Colors.blueGrey);
+
+    // Optional simple check: can we reach positions endpoint (admin proxy)?
+    bool backendOk = false;
+    try {
+      await TraccarService().fetchDevicePositions();
+      backendOk = true; // call succeeded (regardless of empty list)
+    } catch (_) {
+      backendOk = false;
+    }
+
+    if (!backendOk) {
+      setState(() => _isSaving = false);
+      _showSnackBar('Backend unreachable. Try again.', color: Colors.red);
+      return;
+    }
+
+    _showSnackBar('Saving device...', color: Colors.blueGrey);
+
+    bool dbSuccess = false;
+    try {
+      dbSuccess = await _dbService.addLinkedPet(
+          name: name, imei: imei, password: password);
+    } catch (e) {
+      _showSnackBar('Save error: $e', color: Colors.red);
+    }
+
+    setState(() => _isSaving = false);
+
+    if (dbSuccess) {
+      _showSnackBar('Device added.', color: Colors.green);
+      if (mounted) Navigator.of(context).pop();
+    } else {
+      _showSnackBar('Failed to add device.', color: Colors.red);
+    }
+  }
+
+  Widget _buildInputField({
+    required TextEditingController controller,
+    required String hintText,
+    TextInputType keyboardType = TextInputType.text,
+    bool isPassword = false,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0F0F0),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        obscureText: isPassword,
+        decoration: InputDecoration(
+          hintText: hintText,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          border: InputBorder.none,
         ),
-        child: TextField(
-            obscureText: isPassword,
-            decoration: InputDecoration(
-            hintText: hintText,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-            border: InputBorder.none, // Removes the standard underline
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title:
+            const Text('Add Equipment', style: TextStyle(color: Colors.white)),
+        centerTitle: true,
+        backgroundColor: const Color(0xFFF4A905),
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            _buildInputField(
+                controller: _nameController, hintText: 'Pet/Tracker Name'),
+            const SizedBox(height: 12),
+            _buildInputField(
+              controller: _imeiController,
+              hintText: 'IMEI / Account ID',
+              keyboardType: TextInputType.number,
             ),
+            const SizedBox(height: 12),
+            _buildInputField(
+              controller: _passwordController,
+              hintText: 'Password',
+              isPassword: true,
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _isSaving ? null : _addEquipment,
+                icon: _isSaving
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.black))
+                    : const Icon(Icons.save, color: Colors.black),
+                label: Text(_isSaving ? 'Saving...' : 'Save',
+                    style: const TextStyle(
+                        color: Colors.black, fontWeight: FontWeight.bold)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFF4A905),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ),
+          ],
         ),
-        );
-    }
-    }
+      ),
+    );
+  }
+}

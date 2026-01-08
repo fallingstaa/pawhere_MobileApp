@@ -1,56 +1,21 @@
 import 'package:flutter/material.dart';
-// FIX: Corrected import path (assuming pawhere is the package name)
-import 'package:pawhere/features/home/screens/main_feature_shell.dart'; 
+import 'package:pawhere/features/home/screens/add_equipment_screen.dart';
+import 'package:pawhere/features/home/screens/main_feature_shell.dart';
+import 'package:pawhere/services/database_service.dart';
 
-/// Screen where a new user enters device details or skips to the main app (Experience).
 class PairingScreen extends StatefulWidget {
   const PairingScreen({super.key});
+  static const routeName = '/pair';
 
   @override
   State<PairingScreen> createState() => _PairingScreenState();
 }
 
 class _PairingScreenState extends State<PairingScreen> {
-  // New UI uses two fields
   final TextEditingController _accImeiController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  
+  final DatabaseService _db = DatabaseService();
   bool _isPairing = false;
-
-  /// Simulates device pairing and navigates to the main map.
-  void _pairDeviceAndStartTracking() async {
-    final imei = _accImeiController.text.trim();
-    final password = _passwordController.text.trim();
-    
-    if (imei.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter both Device/Account ID and Password.')),
-      );
-      return;
-    }
-
-    setState(() {
-      _isPairing = true;
-    });
-
-    await Future.delayed(const Duration(seconds: 2));
-
-    if (mounted) {
-      _navigateToMainFeatureShell();
-    }
-  }
-
-  /// Handles navigation for both successful pairing/login AND the 'Experience' button.
-  void _navigateToMainFeatureShell() {
-      // Navigate to the MainFeatureShell, replacing the entire navigation stack
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(
-          builder: (context) => const MainFeatureShell(),
-        ),
-        (Route<dynamic> route) => false, 
-      );
-  }
-
 
   @override
   void dispose() {
@@ -59,154 +24,186 @@ class _PairingScreenState extends State<PairingScreen> {
     super.dispose();
   }
 
+  void _navigateToMainFeatureShell() {
+    Navigator.of(context).pushReplacementNamed(MainFeatureShell.routeName);
+  }
+
+  void _goDirectToAddEquipment() {
+    // First go to shell, then push add equipment
+    Navigator.of(context).pushReplacementNamed(MainFeatureShell.routeName);
+    // Delay push until after first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const AddEquipmentScreen()),
+      );
+    });
+  }
+
+  void _mockScanQr() {
+    FocusScope.of(context).unfocus();
+    _accImeiController.text = '123456789012345';
+    ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Simulated QR scan complete.')));
+  }
+
+  Future<void> _pairDevice() async {
+    final imei = _accImeiController.text.trim();
+    final password = _passwordController.text.trim();
+    final accountName = 'Paw Tracker $imei';
+
+    if (imei.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Please enter both IMEI/Account ID and Password.')),
+      );
+      return;
+    }
+
+    setState(() => _isPairing = true);
+    bool success = false;
+    try {
+      success = await _db.addLinkedPet(
+          name: accountName, imei: imei, password: password);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    } finally {
+      setState(() => _isPairing = false);
+    }
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('Successfully paired $accountName!'),
+            backgroundColor: Colors.green),
+      );
+      _navigateToMainFeatureShell();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Pairing failed. Check credentials.'),
+            backgroundColor: Colors.red),
+      );
+    }
+  }
+
+  Widget _buildInputField({
+    required TextEditingController controller,
+    required String hintText,
+    Color backgroundColor = const Color(0xFFF0F0F0),
+    bool isPassword = false,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: TextField(
+        controller: controller,
+        obscureText: isPassword,
+        keyboardType: keyboardType,
+        decoration: const InputDecoration(
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        ).copyWith(hintText: hintText),
+      ),
+    );
+  }
+
+  Widget _buildInputSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildInputField(
+          controller: _accImeiController,
+          hintText: 'IMEI or Account ID',
+          keyboardType: TextInputType.number,
+        ),
+        const SizedBox(height: 12),
+        _buildInputField(
+          controller: _passwordController,
+          hintText: 'Password',
+          isPassword: true,
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 40,
+          child: OutlinedButton.icon(
+            onPressed: _isPairing ? null : _mockScanQr,
+            icon: const Icon(Icons.qr_code_scanner,
+                color: Color(0xFF134694), size: 20),
+            label: const Text('Scan QR Code (Simulated)',
+                style: TextStyle(
+                    color: Color(0xFF134694), fontWeight: FontWeight.bold)),
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Color(0xFF134694)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-          onPressed: () {
-            if (Navigator.of(context).canPop()) {
-              Navigator.of(context).pop();
-            }
-          },
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            // The Logo (Small P icon)
-            Center(
-              // FIX: This needs to be a smaller crop/icon version of the logo, 
-              // but we will use the full logo asset path for now for the demo
-              child: Image.asset(
-                'assets/images/pawhere_logo.jpg', 
-                height: 80,
-                fit: BoxFit.contain,
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Pair Your Device Now',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
-            ),
-            const SizedBox(height: 40),
-
-            // Text Field 1: ACC/IMEI
-            TextField(
-              controller: _accImeiController,
-              decoration: InputDecoration(
-                hintText: 'Please enter acc/15 digit imei',
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(50), 
-                  borderSide: const BorderSide(color: Colors.grey),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(50),
-                  borderSide: const BorderSide(color: Colors.grey),
-                ),
-              ),
-              keyboardType: TextInputType.text,
-            ),
-            const SizedBox(height: 16),
-
-            // Text Field 2: Password
-            TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: InputDecoration(
-                hintText: 'Please enter your password',
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(50), 
-                  borderSide: const BorderSide(color: Colors.grey),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(50),
-                  borderSide: const BorderSide(color: Colors.grey),
-                ),
-              ),
-              keyboardType: TextInputType.visiblePassword,
-            ),
-            const SizedBox(height: 30),
-
-            // Button 1: Pair Device & Start Tracking (Dark Blue)
-            ElevatedButton(
-              onPressed: _isPairing ? null : _pairDeviceAndStartTracking,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF134694),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 18),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)), 
-              ),
-              child: _isPairing
-                  ? const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 3,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
-                  : const Text(
-                      'Pair Device & start Tracking',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-            ),
-            const SizedBox(height: 16),
-            
-            // Button 2: Create Account (Orange/Yellow)
-            ElevatedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Navigating to Create Account screen (AuthHub)')),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFF4A905), 
-                foregroundColor: Colors.black,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)), 
-                elevation: 0,
-              ),
-              child: const Text(
-                'Create account',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Experience Link (TextButton) - Direct route to Main App
-            Center(
-              child: TextButton(
-                onPressed: _navigateToMainFeatureShell, 
-                child: RichText(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 32),
+              Center(
+                  child: Image.asset('assets/images/pawhere_logo.jpg',
+                      height: 100)),
+              const SizedBox(height: 24),
+              const Text('Pair Your Pawwhere GPS Device',
                   textAlign: TextAlign.center,
-                  text: const TextSpan(
-                    text: 'Don\'t have Account yet? just wanna ',
-                    style: TextStyle(color: Colors.black54, fontSize: 14),
-                    children: <TextSpan>[
-                      TextSpan(
-                        text: 'experience',
-                        style: TextStyle(
-                          color: Color(0xFF134694), 
-                          fontWeight: FontWeight.bold,
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    ],
-                  ),
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 24),
+              _buildInputSection(),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _isPairing ? null : _pairDevice,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFF4A905),
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                  elevation: 0,
+                ),
+                child: _isPairing
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(color: Colors.black, strokeWidth: 3),
+                      )
+                    : const Text('Pair Device', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: TextButton(
+                  onPressed: _isPairing ? null : _navigateToMainFeatureShell,
+                  child: const Text('Skip and explore', style: TextStyle(color: Color(0xFF134694))),
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 8),
+              Center(
+                child: TextButton(
+                  onPressed: _isPairing ? null : _goDirectToAddEquipment,
+                  child: const Text('Add equipment without pairing',
+                      style: TextStyle(color: Colors.black54, decoration: TextDecoration.underline)),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

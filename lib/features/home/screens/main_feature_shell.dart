@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-// NOTE: Assuming these imports are correct based on your project structure
 import 'package:pawhere/features/notification/screens/notification_screen.dart';
 import 'package:pawhere/features/location/screens/location_screen.dart';
 import 'package:pawhere/features/paw/screen/paw_screen.dart';
 import 'package:pawhere/features/person/screens/person_screen.dart';
-// NEW IMPORT: Required for the '+' button functionality
-import 'package:pawhere/features/home/screens/add_equipment_screen.dart'; 
+import 'package:pawhere/features/home/screens/add_equipment_screen.dart';
+import 'package:pawhere/models/pet_model.dart';
+import 'package:pawhere/services/database_service.dart';
 
 class MainFeatureShell extends StatefulWidget {
   const MainFeatureShell({Key? key}) : super(key: key);
+  static const routeName = '/main-feature-shell';
 
   @override
   _MainFeatureShellState createState() => _MainFeatureShellState();
@@ -17,54 +18,73 @@ class MainFeatureShell extends StatefulWidget {
 class _MainFeatureShellState extends State<MainFeatureShell> {
   int _selectedIndex = 0;
 
-  final List<Widget> _widgetOptions = <Widget>[
-    _DashboardContent(), // This is the home screen content
-    const NotificationScreen(),
-    const LocationScreen(),
-    const PawScreen(),
-    const PersonScreen(),
-  ];
+  List<Widget> get _pages => const [
+        _DashboardContent(),
+        NotificationScreen(),
+        LocationScreen(),
+        PawScreen(),
+        PersonScreen(),
+      ];
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+  void _onItemTapped(int index) => setState(() => _selectedIndex = index);
+
+  String get _title {
+    switch (_selectedIndex) {
+      case 0:
+        return 'Pawhere';
+      case 1:
+        return 'Notifications';
+      case 2:
+        return 'Location';
+      case 3:
+        return 'Paw';
+      case 4:
+        return 'Profile';
+      default:
+        return 'Pawhere';
+    }
+  }
+
+  List<Widget> _actions(BuildContext context) {
+    if (_selectedIndex == 0) {
+      return [
+        IconButton(
+          tooltip: 'Add equipment',
+          icon: const Icon(Icons.add_circle_outline),
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const AddEquipmentScreen()),
+          ),
+        ),
+      ];
+    }
+    return const [];
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: _widgetOptions.elementAt(_selectedIndex),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
+      appBar: AppBar(
+        title: Text(_title,
+            style: const TextStyle(
+                color: Colors.white, fontWeight: FontWeight.bold)),
+        centerTitle: true,
         backgroundColor: const Color(0xFFF4A905),
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.white),
+        actions: _actions(context),
+      ),
+      body: _pages[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
+        selectedItemColor: const Color(0xFF134694),
+        unselectedItemColor: Colors.grey,
         items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications_none),
-            label: 'Notification',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.location_on_outlined),
-            label: 'Location',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.pets),
-            label: 'Paw',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: 'Person',
-          ),
+              icon: Icon(Icons.notifications), label: 'Alerts'),
+          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
+          BottomNavigationBarItem(icon: Icon(Icons.pets), label: 'Paw'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Me'),
         ],
       ),
     );
@@ -72,216 +92,82 @@ class _MainFeatureShellState extends State<MainFeatureShell> {
 }
 
 class _DashboardContent extends StatelessWidget {
+  const _DashboardContent({Key? key}) : super(key: key);
+
+  void _navigateToAddEquipment(BuildContext context) {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (_) => const AddEquipmentScreen()));
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Header with '+' symbol and user image
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
-          color: const Color(0xFFF4A905),
-          child: SafeArea(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // '+' ICON BUTTON: Leads to AddEquipmentScreen
-                IconButton(
-                  icon: const Icon(
-                    Icons.add, 
-                    size: 30,
-                    color: Colors.white,
-                  ),
-                  onPressed: () {
-                    // NAVIGATION: Go to the Add Equipment Screen
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const AddEquipmentScreen()),
-                    );
-                  },
-                ),
-                
-                // User Profile Image
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
-                    image: const DecorationImage(
-                      image: AssetImage('assets/images/profile.jpg'), 
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        // Flexible sections below the header
-        Expanded(
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                // My Pets section
-                _buildCard(
-                  context,
-                  title: 'My Pets',
-                  icon: Icons.pets,
-                  content: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          _buildPetItem(
-                            'Bella',
-                            'assets/images/dog.jpg', // Corrected path
-                          ),
-                          _buildPetItem(
-                            'Roudy',
-                            'assets/images/dog2.jpg', // Corrected path
-                            subtitle: 'More Pets',
-                          ),
-                          _buildPetItem(
-                            'Fie',
-                            'assets/images/dog3.jpg', // Corrected path
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      TextButton(
-                        onPressed: () {},
-                        child: const Text('More Pets >'),
-                      ),
-                    ],
-                  ),
-                ),
-                // Pet Location section
-                _buildCard(
-                  context,
-                  title: 'Pet Location',
-                  icon: Icons.location_on,
-                  content: Column(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(15),
-                        child: Image.asset(
-                          'assets/images/map.jpg', // Corrected path
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      TextButton(
-                        onPressed: () {},
-                        child: const Text('Track Pets >'),
-                      ),
-                    ],
-                  ),
-                ),
-                // Shop Now section
-                _buildCard(
-                  context,
-                  content: Column(
-                    children: [
-                      SizedBox(
-                        width: 200,
-                        child: ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF134694),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: const Text(
-                            'Shop Now',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Image.asset('assets/images/product.jpg'), // Corrected path
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
+    final db = DatabaseService();
+    return StreamBuilder<List<Pet>>(
+      stream: db.streamLinkedPets(),
+      builder: (context, snap) {
+        if (snap.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final pets = snap.data ?? [];
+        if (pets.isEmpty) return _buildNoPetsContent(context);
+
+        return ListView.separated(
+          padding: const EdgeInsets.all(16),
+          itemCount: pets.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 12),
+          itemBuilder: (_, i) => _buildPetCard(pets[i]),
+        );
+      },
     );
   }
 
-  Widget _buildCard(BuildContext context, {required Widget content, String? title, IconData? icon}) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (title != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 16.0),
-              child: Row(
-                children: [
-                  if (icon != null) Icon(icon),
-                  const SizedBox(width: 8),
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
+  Widget _buildNoPetsContent(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.pets, size: 64, color: Colors.grey),
+            const SizedBox(height: 12),
+            const Text('No trackers linked yet.',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            const Text('Add your first device to get started.',
+                textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () => _navigateToAddEquipment(context),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF134694)),
+              icon: const Icon(Icons.add, color: Colors.white),
+              label: const Text('Add equipment',
+                  style: TextStyle(color: Colors.white)),
             ),
-          content,
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildPetItem(String name, String imagePath, {String? subtitle}) {
-    return Column(
-      children: [
-        Container(
-          width: 80,
-          height: 80,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            image: DecorationImage(
-              image: AssetImage(imagePath),
-              fit: BoxFit.cover,
-            ),
-          ),
+  Widget _buildPetCard(Pet pet) {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: Colors.grey[300]!)),
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: const Color(0xFF134694).withOpacity(0.1),
+          child: const Icon(Icons.pets, color: Color(0xFF134694)),
         ),
-        const SizedBox(height: 8),
-        Text(
-          name,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        if (subtitle != null)
-          Text(
-            subtitle,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Color(0xFF134694),
-            ),
-          ),
-      ],
+        title: Text(pet.name ?? 'Unnamed'),
+        subtitle: Text('IMEI: ${pet.imei ?? '-'}'),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () {
+          // Future: open pet details
+        },
+      ),
     );
   }
 }

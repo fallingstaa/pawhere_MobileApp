@@ -1,0 +1,105 @@
+{
+  "project_info": {
+    "project_number": "1005526505759",
+    "firebase_url": "https://pawhere-a797f-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "pawhere-a797f",
+    "storage_bucket": "pawhere-a797f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1005526505759:android:c630c11632f181aac5782a",
+        "android_client_info": {
+          "package_name": "com.aerokiq.pawhere"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1005526505759-ijgbhphoip9ou057c75t9gqa4jd9htju.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.aerokiq.pawhere",
+            "certificate_hash": "da323e6d90a1ab68702066bbffcf11754a253326"
+          }
+        },
+        {
+          "client_id": "1005526505759-tt3qkt9kfljn1itamqjgddehm2svfbjg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.aerokiq.pawhere",
+            "certificate_hash": "9bbb3186b2189ef16d8f272bdab59362c395cbb4"
+          }
+        },
+        {
+          "client_id": "1005526505759-2goi6m5gkkg9o5bu093dalj2ejsjts2d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjSYsmo-Yc1Gb-stCgOuaxrEDRp_qluaY"
+        },
+        {
+          "current_key": "AIzaSyAkjGjSqqhIcTEpzZVlwksV19zYY1ocYH4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1005526505759-2goi6m5gkkg9o5bu093dalj2ejsjts2d.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1005526505759-874jjs4nlp4e68a8rlh8jsqloeu875aa.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.aerokiq.pawhere"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1005526505759:android:ec25b1aafca760eac5782a",
+        "android_client_info": {
+          "package_name": "com.example.pawhere"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1005526505759-2goi6m5gkkg9o5bu093dalj2ejsjts2d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjSYsmo-Yc1Gb-stCgOuaxrEDRp_qluaY"
+        },
+        {
+          "current_key": "AIzaSyAkjGjSqqhIcTEpzZVlwksV19zYY1ocYH4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1005526505759-2goi6m5gkkg9o5bu093dalj2ejsjts2d.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1005526505759-874jjs4nlp4e68a8rlh8jsqloeu875aa.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.aerokiq.pawhere"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

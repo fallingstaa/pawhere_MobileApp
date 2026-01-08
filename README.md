@@ -60,7 +60,27 @@ This repository currently focuses on **mobile app UI and core structure**.
 
 ---
 
-## 📂 Project Structure (
+## 📂 Project Structure
+Core Files
+pubspec.yaml: Flutter dependencies (Firebase, maps, image picker)
+README.md: Project overview
+.gitignore: Excludes build files, .env, etc.
+Main App Code (lib/)
+main.dart: App entry with Firebase init
+firebase_options.dart: Platform-specific Firebase configs
+models/: Pet & Position data classes
+services/: Auth, Database (Firestore), Traccar API proxy
+features/: UI screens (onboarding, home, location, pets, etc.)
+Backend (functions/)
+index.js: Firebase Cloud Function proxying Traccar GPS API
+package.json: Node.js deps (Express, Axios, Firebase Admin)
+Platform Support
+android/, ios/, web/, windows/, macos/, linux/: Platform-specific builds
+Assets
+assets/images/: App logos and icons
+Build & Config
+firebase.json: Firebase project config
+build/: Generated artifacts (ignored)
 lib/
 ├── main.dart                    # App entry point with Firebase init
 ├── firebase_options.dart        # Platform-specific Firebase configs

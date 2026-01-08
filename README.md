@@ -1,16 +1,67 @@
-# pawhere
+# PAWhere (PawHere)
 
-A new Flutter project.
+PAWhere is a Flutter-based pet tracking mobile application that helps pet owners
+track their pets’ location and safety using GPS devices.
 
-## Getting Started
+The system uses:
+- **Traccar** for GPS tracking & location data
+- **Firebase** for authentication, app data, and notifications
 
-This project is a starting point for a Flutter application.
+---
 
-A few resources to get you started if this is your first Flutter project:
+## 📌 Project Status
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+🚧 **In Development (Initial Phase)**
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Frontend UI: **~50–60% completed**
+- Backend: **Firebase + Traccar connected**
+- Some screens and logic are placeholders
+
+This repository currently focuses on **mobile app UI and core structure**.
+
+---
+
+## 🛠 Tech Stack
+
+- Flutter (Mobile App)
+- Firebase
+  - Authentication
+  - Firestore
+  - Cloud Functions (Proxy)
+- Traccar (GPS Tracking Backend)
+
+---
+
+## ✅ Features Implemented
+
+- Flutter project setup
+- Firebase initialization
+- Anonymous authentication
+- Bottom navigation:
+  - Dashboard
+  - Location (Map)
+  - Notifications (placeholder)
+  - Pet (Paw)
+  - Profile (placeholder)
+- Pet profile model
+- GPS position model
+- Pet-device pairing (IMEI + password)
+- Firestore structure for pets per user
+- Map screen displaying pet location
+- Pet profile image selection
+
+---
+
+## ⏳ Not Finished Yet
+
+- Real GPS device integration
+- Geofencing (safe zones)
+- Alerts & notifications logic
+- Device ownership rules
+- Location history playback
+- Full UI polish & error handling
+
+---
+
+## 📂 Project Structure (Simplified)
+

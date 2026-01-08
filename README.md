@@ -75,4 +75,15 @@ This repository currently focuses on **mobile app UI and core app structure**.
 flutter pub get
 flutter run
 Also : 
-flutter run -d chrome 
+flutter run -d chrome
+
+lib/
+ ├── main.dart              # App entry point
+ ├── firebase_options.dart  # Firebase configs
+ ├── models/                # Data models (Pet, Position)
+ ├── services/              # Firebase & Traccar logic
+ └── features/              # UI screens by feature
+
+functions/
+ └── index.js               # Firebase Cloud Function (Traccar proxy)
+

@@ -1,4 +1,4 @@
-# PAWhere (PawHere)
+# PAWhere (PAWhere)
 
 PAWhere is a Flutter-based pet tracking mobile application that helps pet owners
 track their pets’ location and safety using GPS devices.
